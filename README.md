@@ -5,10 +5,14 @@ Example to export chrome tab as a video
 2. Specify bitrate to control quality of the exported video by adjusting `videoBitsPerSecond` property in `background.js`
 
 # Dependencies
+Requries Xvfb and Chrome
+
 ```sh
 npm install
 ```
-### Install Chrome
+## Headless
+Must be run in a linux environment to export video in headless mode
+### Install Xvfb
 
 ```sh
 sudo apt-get install xvfb
