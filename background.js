@@ -21,7 +21,7 @@ chrome.runtime.onConnect.addListener(port => {
         tab.url = msg.data.url
         chrome.desktopCapture.chooseDesktopMedia(['tab', 'audio'], streamId => {
           // Get the stream
-          navigator.webkitGetUserMedia({
+          navigator.mediaDevices.getUserMedia({
             audio: false,
             video: {
               mandatory: {
@@ -34,12 +34,15 @@ chrome.runtime.onConnect.addListener(port => {
                 minFrameRate: 60,
               }
             }
-          }, stream => {
-            var chunks=[];
+          }).then(stream => {
+            var chunks = [];
+            var useh264 = MediaRecorder.isTypeSupported('video/webm\;codecs=h264');
+            var type = useh264 ? 'video/webm\;codecs=h264' : 'video/webm';
+
             recorder = new MediaRecorder(stream, {
                 videoBitsPerSecond: 2500000,
                 ignoreMutedMedia: true,
-                mimeType: 'video/webm'
+                mimeType: type
             });
             recorder.ondataavailable = function (event) {
                 if (event.data.size > 0) {
@@ -49,7 +52,7 @@ chrome.runtime.onConnect.addListener(port => {
 
             recorder.onstop = function () {
                 var superBuffer = new Blob(chunks, {
-                    type: 'video/webm'
+                    type: type
                 });
 
                 var url = URL.createObjectURL(superBuffer);
