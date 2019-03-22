@@ -2,9 +2,9 @@ const puppeteer = require("puppeteer");
 const Xvfb = require("xvfb");
 const xvfb = new Xvfb({ silent: true }); // Single instance or capable of many ?
 
-function getPuppeteerOptions(options) {
+function getPuppetOptions(options) {
 
-    return options = {
+    const puppetOptions = {
         headless: false,
         args: [
             "--enable-usermedia-screen-capturing",
@@ -17,6 +17,13 @@ function getPuppeteerOptions(options) {
             `--window-size=${options.width || 1280},${options.height || 720}`,
         ],
     };
+
+    if(options.useChrome){
+        puppetOptions.args.push("--no-sandbox");
+        puppetOptions.args.push("--disable-setuid-sandbox");
+        puppetOptions.executablePath = '/usr/bin/chromium-browser';
+    }
+    return puppetOptions;
 }
 
 async function main(options = {}) {
@@ -26,7 +33,7 @@ async function main(options = {}) {
     const url = options.url || "http://tobiasahlin.com/spinkit/";
     const exportname = options.exportname || "spinner.webm";
     
-    const browser = await puppeteer.launch(getPuppeteerOptions(options));
+    const browser = await puppeteer.launch(getPuppetOptions(options));
     const pages = await browser.pages();
     const page = pages[0];
     await page._client.send("Emulation.clearDeviceMetricsOverride");
