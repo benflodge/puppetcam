@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Capture all automated actions in a browser and export as a video",
   "scripts": {
-    "example": "node index.js --exportname='test.webm' --url='http://tobiasahlin.com/spinkit/' --width 1280 --height 720"
+    "example": "node index.js --exportname='test.webm' --url='http://tobiasahlin.com/spinkit/' --width=1280 --height=720"
   },
   "keywords": [
     "record",

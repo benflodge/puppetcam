@@ -6,18 +6,30 @@ window.onload = () => {
   const port = chrome.runtime.connect(chrome.runtime.id)
   port.onMessage.addListener(msg => window.postMessage(msg, '*'))
   window.addEventListener('message', event => {
+    
     // Relay client messages
-    if (event.source === window && event.data.type) {
+    if (event.source === window && event.data.type && 
+      event.data.type !== 'LOG' && event.data.type !== 'ERROR') {
       port.postMessage(event.data)
     }
+
     if(event.data.type === 'PLAYBACK_COMPLETE'){
       port.postMessage({ type: 'REC_STOP' }, '*')
     }
+    
+    if(event.data.type === 'ERROR'){
+      throw new Error(event.data.msg)
+    }
+
+    if(event.data.type === 'LOG'){
+      console.log(JSON.stringify(event.data.msg))
+    }
+
     if(event.data.downloadComplete){
       document.querySelector('html').classList.add('downloadComplete')
     }
   })
 
   document.title = 'puppetcam'
-  window.postMessage({ type: 'REC_CLIENT_PLAY', data: { url: window.location.origin } }, '*')
+  console.log('Script loaded')
 }

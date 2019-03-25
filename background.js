@@ -2,10 +2,25 @@
 
 let recorder = null;
 let filename = null;
+
 chrome.runtime.onConnect.addListener(port => {
 
+  const logMessage = function () {
+    port.postMessage({
+      type: 'LOG',
+      msg: arguments
+    }, '*')
+  };
+
+  const logError = function (error) {
+    port.postMessage({
+      type: 'ERROR',
+      msg: error
+    }, '*')
+  };
+
   port.onMessage.addListener(msg => {
-    console.log(msg);
+    logMessage(msg);
     switch (msg.type) {
       case 'SET_EXPORT_PATH':
         filename = msg.filename
@@ -27,11 +42,11 @@ chrome.runtime.onConnect.addListener(port => {
               mandatory: {
                 chromeMediaSource: 'desktop',
                 chromeMediaSourceId: streamId,
-                minWidth: 1280,
-                maxWidth: 1280,
-                minHeight: 720,
-                maxHeight: 720,
-                minFrameRate: 60,
+                minWidth: msg.data.width || 480,
+                maxWidth: msg.data.width || 1920,
+                minHeight: msg.data.height || 270,
+                maxHeight: msg.data.height|| 1080,
+                minFrameRate: 30,
               }
             }
           }).then(stream => {
@@ -40,10 +55,11 @@ chrome.runtime.onConnect.addListener(port => {
             var type = useh264 ? 'video/webm\;codecs=h264' : 'video/webm';
 
             recorder = new MediaRecorder(stream, {
-                videoBitsPerSecond: 2500000,
+                videoBitsPerSecond: 72134880,
                 ignoreMutedMedia: true,
                 mimeType: type
             });
+
             recorder.ondataavailable = function (event) {
                 if (event.data.size > 0) {
                     chunks.push(event.data);
@@ -66,16 +82,15 @@ chrome.runtime.onConnect.addListener(port => {
               chrome.downloads.download({
                 url: url,
                 filename: filename
-              }, ()=>{
-              });
+              }, () => {});
             }
 
             recorder.start();
-          }, error => console.log('Unable to get user media', error))
+          }, error => logError('Unable to get user media', error))
         })
         break
       default:
-        console.log('Unrecognized message', msg)
+        logMessage('Unrecognized message', msg)
     }
   })
 
